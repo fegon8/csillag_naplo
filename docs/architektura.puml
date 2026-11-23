@@ -1,0 +1,113 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "hu.astrolog.modell" {
+    abstract class Egitest {
+        - katalogusKod: String
+        - nev: String
+        - magnitudo: double
+        - csillagkep: String
+        + Egitest(katalogusKod: String, nev: String, magnitudo: double, csillagkep: String)
+        + {abstract} getTipusNev(): String
+        + {abstract} szamitAlapNehezseg(): double
+        + getKatalogusKod(): String
+        + getNev(): String
+        + getMagnitudo(): double
+        + getCsillagkep(): String
+    }
+
+    class Bolygo {
+        - fazisSzazalek: int
+        + Bolygo(katalogusKod: String, nev: String, magnitudo: double, csillagkep: String, fazisSzazalek: int)
+        + getTipusNev(): String
+        + szamitAlapNehezseg(): double
+    }
+
+    class MelyegObjektum {
+        - objektumKategoria: String
+        + MelyegObjektum(katalogusKod: String, nev: String, magnitudo: double, csillagkep: String, objektumKategoria: String)
+        + getTipusNev(): String
+        + szamitAlapNehezseg(): double
+    }
+
+    class Csillag {
+        - szinkepOsztaly: String
+        + Csillag(katalogusKod: String, nev: String, magnitudo: double, csillagkep: String, szinkepOsztaly: String)
+        + getTipusNev(): String
+        + szamitAlapNehezseg(): double
+    }
+
+    class Tavcso {
+        - nev: String
+        - atmeroMm: int
+        - fokuszTavolsagMm: int
+        - alapertelmezett: boolean
+        + Tavcso(nev: String, atmeroMm: int, fokuszTavolsagMm: int, alapertelmezett: boolean)
+    }
+
+    class EszlelesiBejegyzes {
+        - egitest: Egitest
+        - megjegyzes: String
+        + EszlelesiBejegyzes(egitest: Egitest, megjegyzes: String)
+    }
+
+    class EszlelesiAlkalom {
+        - id: String
+        - datum: LocalDate
+        - helyszin: String
+        - bortleSkala: int
+        - tavcso: Tavcso
+        - bejegyzesek: List<EszlelesiBejegyzes>
+        + EszlelesiAlkalom(datum: LocalDate, helyszin: String, bortleSkala: int, tavcso: Tavcso)
+        + bejegyzesHozzaadasa(bejegyzes: EszlelesiBejegyzes): void
+    }
+
+    class FeloldottEgitest {
+        - katalogusKod: String
+        - nev: String
+        - tipus: String
+        - elsoEszlelesDatuma: LocalDate
+        - eszlelesekSzama: int
+        + novelEszlelesekSzama(): void
+    }
+}
+
+package "hu.astrolog.szolgaltatas" {
+    interface ErtekelesiStrategia {
+        + getStrategiaNev(): String
+        + szamitPontszam(bejegyzes: EszlelesiBejegyzes, bortleSkala: int): double
+    }
+
+    class MelyegVadaszStrategia {
+        + getStrategiaNev(): String
+        + szamitPontszam(bejegyzes: EszlelesiBejegyzes, bortleSkala: int): double
+    }
+
+    class KezdobaratStrategia {
+        + getStrategiaNev(): String
+        + szamitPontszam(bejegyzes: EszlelesiBejegyzes, bortleSkala: int): double
+    }
+
+    class NaploKezelo {
+        - alkalmak: List<EszlelesiAlkalom>
+        - tavcsovek: List<Tavcso>
+        - feloldottKatalogus: Map<String, FeloldottEgitest>
+        - aktivAlkalom: EszlelesiAlkalom
+        - aktualisStrategia: ErtekelesiStrategia
+    }
+}
+
+Egitest <|-- Bolygo
+Egitest <|-- MelyegObjektum
+Egitest <|-- Csillag
+
+EszlelesiAlkalom "1" *-- "0..*" EszlelesiBejegyzes : tartalmazza >
+EszlelesiBejegyzes "0..*" --> "1" Egitest : megfigyelt >
+EszlelesiAlkalom "0..*" --> "1" Tavcso : hasznalt >
+
+ErtekelesiStrategia <|.. MelyegVadaszStrategia
+ErtekelesiStrategia <|.. KezdobaratStrategia
+NaploKezelo --> ErtekelesiStrategia : hasznalja >
+NaploKezelo "1" o-- "0..*" EszlelesiAlkalom
+NaploKezelo "1" o-- "0..*" FeloldottEgitest
+@enduml
