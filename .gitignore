@@ -2,9 +2,4 @@ target/
 .idea/
 *.iml
 .vscode/
-.classpath
-.project
-.settings/
-data/
-*.csv
-*.log
+observations.dat
